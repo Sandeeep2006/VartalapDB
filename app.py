@@ -12,10 +12,10 @@ load_dotenv()
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 # Set page config. This should be the first Streamlit command.
+# Removed layout="wide" to return to the default centered layout.
 st.set_page_config(
     page_title="VartalapDB",
-    page_icon="💬",
-    layout="wide"
+    page_icon="💬"
 )
 
 # --- App Title ---
