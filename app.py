@@ -11,6 +11,18 @@ load_dotenv()
 # Initialize Groq client
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
+# Set page config. This should be the first Streamlit command.
+st.set_page_config(
+    page_title="VartalapDB",
+    page_icon="💬",
+    layout="wide"
+)
+
+# --- App Title ---
+st.title("VartalapDB 💬")
+st.caption("Chat with your database using natural language")
+
+
 def get_llm_response(prompt):
     """Send a prompt to Groq LLM and return response."""
     response = client.chat.completions.create(
@@ -54,11 +66,12 @@ st.markdown("""
 .connection-form {
     max-width: 400px;
     padding: 20px;
-    background-color: #f0f2f6;
+    background-color: #262730; /* Darker background for form */
+    border: 1px solid #444;
     border-radius: 10px;
     margin: 20px auto;
 }
-.connection-form h2 { color: #1f77b4; text-align: center; }
+.connection-form h2 { color: #fafafa; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -97,7 +110,7 @@ if not st.session_state.db_connected:
 
 # Main chat interface
 else:
-    st.title(f"Chatting with {st.session_state.db_info['database']} 💬")
+    st.header(f"Chatting with `{st.session_state.db_info['database']}`")
     mysql = MySqlConnector(**st.session_state.db_info)
     schema_info = mysql.get_basic_info()
 
@@ -116,3 +129,4 @@ else:
         with st.chat_message("assistant"):
             st.write(response)
         st.session_state.messages.append({"role": "assistant", "content": str(response)})
+
