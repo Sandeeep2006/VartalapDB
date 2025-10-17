@@ -11,16 +11,14 @@ load_dotenv()
 # Initialize Groq client
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-# Set page config. This should be the first Streamlit command.
-# Removed layout="wide" to return to the default centered layout.
 st.set_page_config(
     page_title="VartalapDB",
     page_icon="💬"
 )
 
-# --- App Title ---
-st.title("VartalapDB 💬")
-st.caption("Chat with your database using natural language")
+#App Title
+st.markdown("<h1 style='text-align: center;'>VartalapDB 💬</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888;'>Chat with your database using natural language</p>", unsafe_allow_html=True)
 
 
 def get_llm_response(prompt):
@@ -60,18 +58,38 @@ def iterative_query_generation(user_input, schema_info, max_retries=3):
 
     return "Failed to generate a valid query."
 
-# Custom CSS
+#CSS
 st.markdown("""
 <style>
+/* Hide ALL vertical block backgrounds */
+div[data-testid="stVerticalBlock"] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Hide the specific container that creates the grey box */
+.element-container:has(.connection-form) {
+    background: transparent !important;
+}
+
 .connection-form {
     max-width: 400px;
     padding: 20px;
-    background-color: #262730; /* Darker background for form */
+    background-color: #262730;
     border: 1px solid #444;
     border-radius: 10px;
     margin: 20px auto;
 }
-.connection-form h2 { color: #fafafa; text-align: center; }
+
+.connection-form h2 { 
+    color: #fafafa; 
+    text-align: center; 
+}
+
+.stForm {
+    background: transparent !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -85,15 +103,16 @@ if "messages" not in st.session_state:
 
 # Database connection setup
 if not st.session_state.db_connected:
-    with st.container():
-        st.markdown('<div class="connection-form">', unsafe_allow_html=True)
-        st.header("Database Connection Setup 🔌")
+    col1, col2, col3 = st.columns([1, 3, 1])
+    
+    with col2:
+        st.markdown("## Database Connection Setup 🔌")
         with st.form("db_connection"):
             host = st.text_input("Host", "localhost")
             user = st.text_input("User", "root")
             password = st.text_input("Password", type="password")
             database = st.text_input("Database", "my_database")
-            submitted = st.form_submit_button("Connect")
+            submitted = st.form_submit_button("Connect", use_container_width=True)
 
             if submitted:
                 with st.spinner("Connecting..."):
@@ -106,27 +125,28 @@ if not st.session_state.db_connected:
                             "password": password, "database": database
                         }
                         st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # Main chat interface
 else:
-    st.header(f"Chatting with `{st.session_state.db_info['database']}`")
     mysql = MySqlConnector(**st.session_state.db_info)
     schema_info = mysql.get_basic_info()
 
+    # Display previous messages
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
+    # Handle new user input
     if prompt := st.chat_input("Ask your database question..."):
         with st.chat_message("user"):
             st.markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
+        # Generate and execute query
         final_query = iterative_query_generation(prompt, schema_info)
         response = mysql.execute_pd_query(final_query)
 
+        # Display assistant response
         with st.chat_message("assistant"):
             st.write(response)
         st.session_state.messages.append({"role": "assistant", "content": str(response)})
-

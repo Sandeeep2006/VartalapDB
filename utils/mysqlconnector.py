@@ -2,7 +2,6 @@ import mysql.connector
 import pandas as pd
 
 class MySqlConnector:
-    """Handles MySQL connection and query execution."""
     def __init__(self, host, user, password, database):
         self.host = host
         self.user = user
