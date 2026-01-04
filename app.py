@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from groq import Groq
 from utils.mysqlconnector import MySqlConnector
 
-# Load environment variables
 load_dotenv()
 
 # Initialize Groq client
@@ -134,7 +133,10 @@ else:
     # Display previous messages
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+            if isinstance(msg["content"], pd.DataFrame):
+                st.dataframe(msg["content"])  # If dataframe draw table
+            else:
+                st.markdown(msg["content"])   # else text
 
     # Handle new user input
     if prompt := st.chat_input("Ask your database question..."):
@@ -149,4 +151,4 @@ else:
         # Display assistant response
         with st.chat_message("assistant"):
             st.write(response)
-        st.session_state.messages.append({"role": "assistant", "content": str(response)})
+        st.session_state.messages.append({"role": "assistant", "content": response})
